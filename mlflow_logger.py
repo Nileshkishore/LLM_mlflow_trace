@@ -6,7 +6,7 @@ def log_to_mlflow(run_id, user_input, prompt, result, retrieved_docs, cosine_sco
         with mlflow.start_run(run_id=run_id):
             mlflow.log_param("model_used", result.get("model", "Unknown Model"))
             mlflow.log_param("user_prompt", user_input)
-            mlflow.log_param("full_prompt", prompt)
+            #mlflow.log_param("full_prompt", prompt)
 
             retrieved_doc_name = retrieved_docs[0].metadata.get("source", "Unknown File") if retrieved_docs else "No document found"
             mlflow.log_param("retrieved_doc_name", retrieved_doc_name)
