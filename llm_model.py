@@ -1,10 +1,9 @@
 import yaml
 import mlflow
 from custom_ollama import OllamaLLMWithMetadata
-
 # Load config
-with open("config.yaml", "r") as file:
-    config = yaml.safe_load(file)
+from config_loader import config  
+
 
 class TracedOllamaLLMWithMetadata(OllamaLLMWithMetadata):
     @mlflow.trace

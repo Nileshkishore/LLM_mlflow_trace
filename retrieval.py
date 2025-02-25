@@ -2,6 +2,7 @@ from langchain_chroma import Chroma
 from langchain_huggingface import HuggingFaceEmbeddings
 from config_loader import config  
 import mlflow
+
 # Ensure config is not None
 if not config:
     raise ValueError("Configuration not loaded properly. Check config_loader.py and config.yaml.")

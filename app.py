@@ -5,10 +5,8 @@ import threading
 from retrieval import retrieve_documents
 from llm_model import generate_response
 from mlflow_logger import log_to_mlflow
+from config_loader import config  
 
-# Load config
-with open("config.yaml", "r") as file:
-    config = yaml.safe_load(file)
 
 mlflow.set_experiment(config["mlflow"]["experiment_name"])
 
