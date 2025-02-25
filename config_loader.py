@@ -1,5 +1,7 @@
 import yaml
+import mlflow
 
+@mlflow.trace
 def load_config():
     try:
         with open("config.yaml", "r") as file:
