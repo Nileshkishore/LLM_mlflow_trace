@@ -1,6 +1,6 @@
 from langchain_chroma import Chroma
 from langchain_huggingface import HuggingFaceEmbeddings
-from config_loader import config  # ✅ Load config from config_loader.py
+from config_loader import config  
 import mlflow
 # Ensure config is not None
 if not config:
