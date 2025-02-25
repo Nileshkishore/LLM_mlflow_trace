@@ -32,7 +32,7 @@ st.title("🔍 LLM RAG Chatbot with MLflow & ChromaDB")
 st.write("Ask a question and get responses from Llama 3.2!")
 
 # User input
-user_input = st.text_input("💬 Ask something:", "")
+user_input = st.text_input("💬 Ask Your question:", "")
 
 if st.button("Submit"):
     if user_input.strip():
