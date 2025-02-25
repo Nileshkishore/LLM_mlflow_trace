@@ -13,7 +13,7 @@ mlflow.set_experiment(config["mlflow"]["experiment_name"])
 
 # Keep track of background threads
 background_threads = []
-@mlflow.trace
+
 def process_query(user_input):
     # Retrieve documents
     context, cosine_score, retrieved_docs_with_scores, top_doc = retrieve_documents(user_input)
