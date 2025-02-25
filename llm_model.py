@@ -1,12 +1,13 @@
 import yaml
 import mlflow
+from mlflow.entities import SpanType
 from custom_ollama import OllamaLLMWithMetadata
 # Load config
 from config_loader import config  
 
 
 class TracedOllamaLLMWithMetadata(OllamaLLMWithMetadata):
-    @mlflow.trace
+    @mlflow.trace(span_type=SpanType.LLM)
     def invoke(self, prompt):
         return super().invoke(prompt)
 

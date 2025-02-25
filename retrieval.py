@@ -2,6 +2,7 @@ from langchain_chroma import Chroma
 from langchain_huggingface import HuggingFaceEmbeddings
 from config_loader import config  
 import mlflow
+from mlflow.entities import SpanType
 
 # Ensure config is not None
 if not config:
@@ -13,7 +14,8 @@ embedding_model = HuggingFaceEmbeddings(model_name=config["llm"]["embedding_mode
 
 # Initialize ChromaDB
 vector_store = Chroma(persist_directory=persist_directory, embedding_function=embedding_model)
-@mlflow.trace
+
+@mlflow.trace(span_type=SpanType.RETRIEVER)
 def retrieve_documents(query, top_k=None):
     if top_k is None:
         top_k = config["retrieval"]["top_k"]  # Default to config value
