@@ -30,4 +30,4 @@ def retrieve_documents(query, top_k=None):
         context = "No relevant document found."
         cosine_score = 0.0
 
-    return context, cosine_score, retrieved_docs_with_scores, top_doc
+    return context[:1000], cosine_score, retrieved_docs_with_scores, top_doc
