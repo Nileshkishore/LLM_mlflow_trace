@@ -103,7 +103,7 @@ pipeline {
                     // Run MLflow UI in the background on port 5000
                     sh """
                         source ${workspaceDir}/venv/bin/activate
-                        nohup mlflow ui --port 5000 > ${workspaceDir}/mlflow.log 2>&1 &
+                        nohup mlflow ui --port 5002 > ${workspaceDir}/mlflow.log 2>&1 &
                         echo "MLflow server is running on port 5000 in the background."
                     """
 
