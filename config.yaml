@@ -1,0 +1,12 @@
+mlflow:
+  experiment_name: "LLM_RAG_Logging"
+
+chroma:
+  persist_directory: "./chroma_db"
+
+llm:
+  model_name: "llama3.2"
+  embedding_model: "all-MiniLM-L6-v2"
+
+retrieval:
+  top_k: 4
