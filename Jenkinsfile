@@ -111,7 +111,7 @@ pipeline {
                     //python3 ${workspaceDir}/main.py
                     sh """
                         source ${workspaceDir}/venv/bin/activate
-                        streamlit run ${workspaceDir}/main_streamlit.py 
+                        streamlit run ${workspaceDir}/app.py 
                     """
                 }
             }
