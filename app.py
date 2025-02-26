@@ -16,16 +16,18 @@ background_threads = []
 def process_query(user_input):
     # Retrieve documents
     context, cosine_score, retrieved_docs_with_scores, top_doc = retrieve_documents(user_input)
+    print(top_doc.metadata.get("source", "").split("/")[-1] )
     if top_doc.metadata.get("source", "").split("/")[-1] == 'vulgar.txt':
         result = "no comment"
-    # Construct the full prompt
-    if cosine_score <= config["score"]["thresold"]:
-        prompt = f"Context: {context}\n\nQuestion: {user_input}"
     else:
-        prompt = f"Question: {user_input}"
+        # Construct the full prompt
+        if cosine_score <= config["score"]["thresold"]:
+            prompt = f"Context: {context}\n\nQuestion: {user_input}"
+        else:
+            prompt = f"Question: {user_input}"
 
-    # Query Llama 3.2 with retrieved context
-    result = generate_response(prompt)
+        # Query Llama 3.2 with retrieved context
+        result = generate_response(prompt)
 
     return result, context, cosine_score, retrieved_docs_with_scores, prompt, top_doc
 
