@@ -19,6 +19,7 @@ def process_query(user_input):
     print(top_doc.metadata.get("source", "").split("/")[-1] )
     if top_doc.metadata.get("source", "").split("/")[-1] == 'vulgar.txt':
         result = "no comment"
+        prompt = f"Question: {user_input}"
     else:
         # Construct the full prompt
         if cosine_score <= config["score"]["thresold"]:
