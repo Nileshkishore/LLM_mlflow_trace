@@ -14,39 +14,42 @@ persist_directory = "./chroma_db"
 # Initialize embedding model
 embedding_model = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
 
-# Initialize ChromaDB
-vector_store = Chroma(persist_directory=persist_directory, embedding_function=embedding_model)
+# Step 1: Clear existing directory (optional: comment out if you want to keep a backup)
+if os.path.exists(persist_directory):
+    import shutil
+    shutil.rmtree(persist_directory)
+    print(f"🗑️ Cleared existing {persist_directory} directory.")
 
-# 🗑️ Step 1: Delete all existing documents from ChromaDB
-try:
-    vector_store.delete(where={"id": {"$ne": ""}})  # Correct deletion method
-    print("🗑️ Deleted all existing documents from ChromaDB.")
-except Exception as e:
-    print(f"⚠️ Error deleting existing documents: {e}")
-
-# Track embedding time
-embedding_start_time = time.time()
-
-# Process all text files
+# Step 2: Load all documents first
+docs = []
 for filename in os.listdir(folder_path):
     if filename.endswith(".txt"):
         file_path = os.path.join(folder_path, filename)
-        
-        # Load document
         loader = TextLoader(file_path)
-        docs = loader.load()  # Loads a list of documents
-
-        # Ensure document has content
-        if not docs or not docs[0].page_content.strip():
+        loaded_docs = loader.load()
+        
+        if not loaded_docs or not loaded_docs[0].page_content.strip():
             print(f"⚠️ Skipping empty file: {filename}")
             continue
+        docs.extend(loaded_docs)
+        print(f"📜 Loaded {filename}")
 
-        # Add document to ChromaDB (Chroma automatically embeds the documents)
-        vector_store.add_documents(docs)
+# Step 3: Create new ChromaDB with cosine similarity
+embedding_start_time = time.time()
+vector_store = Chroma.from_documents(
+    documents=docs,
+    embedding=embedding_model,
+    persist_directory=persist_directory,
+    collection_metadata={"hnsw:space": "cosine"}  # Enforce cosine similarity
+)
+# No need for persist() - it’s automatic with persist_directory
 
-        print(f"✅ Stored {filename}")
-
-# Track total time
 embedding_end_time = time.time()
-print(f"✅ All embeddings saved to ChromaDB.")
+print(f"✅ All embeddings saved to ChromaDB with cosine similarity.")
 print(f"⏱️ Total time taken: {embedding_end_time - embedding_start_time:.4f} sec")
+
+# Step 4: Test it
+query = "football game recap"
+results = vector_store.similarity_search_with_score(query, k=4)
+for doc, score in results:
+    print(f"Doc: {doc.page_content[:50]}... | Score: {score}")
