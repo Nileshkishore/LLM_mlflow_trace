@@ -17,7 +17,7 @@ def process_query(user_input):
     # Retrieve documents
     context, cosine_score, retrieved_docs_with_scores, top_doc = retrieve_documents(user_input)
     if top_doc.metadata["source"] == "00-Sports-Articles/vulgar.txt":
-        result = "no comment"
+        result = {"response": "no comment"}
         prompt = f"Question: {user_input}"
     else:
         # Construct the full prompt
