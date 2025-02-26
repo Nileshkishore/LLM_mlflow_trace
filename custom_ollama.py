@@ -23,3 +23,36 @@ class OllamaLLMWithMetadata(OllamaLLM):
             "prompt_tokens": response_json.get("prompt_eval_count"),
             "generated_tokens": response_json.get("eval_count")
         }
+    
+    def stream(self, prompt):
+        """Stream tokens from Ollama API with metadata at the end"""
+        url = "http://localhost:11434/api/generate"
+        data = {
+            "model": self.model,
+            "prompt": prompt,
+            "stream": True  # Enable streaming
+        }
+        
+        with requests.post(url, json=data, stream=True) as response:
+            response.raise_for_status()
+            
+            # Track metadata for final return
+            metadata = {}
+            
+            for line in response.iter_lines():
+                if line:
+                    chunk = json.loads(line.decode('utf-8'))
+                    
+                    # Yield the token
+                    if 'response' in chunk:
+                        yield chunk['response']
+                    
+                    # Save metadata when done
+                    if chunk.get('done', False):
+                        metadata = {
+                            "model": chunk.get("model"),
+                            "created_at": chunk.get("created_at"),
+                            "total_duration": chunk.get("total_duration"),
+                            "prompt_tokens": chunk.get("prompt_eval_count"),
+                            "generated_tokens": chunk.get("eval_count")
+                        }
