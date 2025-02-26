@@ -18,7 +18,10 @@ def process_query(user_input):
     context, cosine_score, retrieved_docs_with_scores, top_doc = retrieve_documents(user_input)
 
     # Construct the full prompt
-    prompt = f"Context: {context}\n\nQuestion: {user_input}"
+    if cosine_score <= 0.7:
+        prompt = f"Context: {context}\n\nQuestion: {user_input}"
+    else:
+        prompt = f"Question: {user_input}"
 
     # Query Llama 3.2 with retrieved context
     result = generate_response(prompt)
