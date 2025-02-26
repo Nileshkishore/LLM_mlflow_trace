@@ -42,71 +42,58 @@ def process_query(user_input, stream=False):
 
 # Streamlit UI
 st.title("🔍 LLM RAG Chatbot with MLflow & ChromaDB")
-st.write("Ask a question and get responses from Llama 3.2!")
 
 # Initialize session state for conversation history
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# Display chat history
-for message in st.session_state.messages:
-    with st.chat_message(message["role"]):
-        st.write(message["content"])
+# Create a container for chat
+chat_container = st.container()
 
 # Create a container for the input field at the bottom
 input_container = st.container()
 
-# Display additional information in expander above the input
-with st.expander("View Retrieved Documents", expanded=False):
-    if len(st.session_state.messages) > 0:
-        # Only show this if there's been at least one query
-        last_result = st.session_state.get("last_result", {})
-        last_context = st.session_state.get("last_context", "")
-        last_cosine_score = st.session_state.get("last_cosine_score", 0)
-        last_docs = st.session_state.get("last_docs", [])
-        
-        st.subheader("📜 Top Retrieved Document Snippet:")
-        st.write(last_context[:500] if last_context else "No context yet")
-
-        st.subheader("🔢 Cosine Similarity Score (Top Match):")
-        st.write(round(last_cosine_score, 4) if last_cosine_score else "No score yet")
-
-        # Show retrieved documents
-        if last_docs:
-            st.subheader("📚 Retrieved Documents and Scores:")
-            for i, (doc, score) in enumerate(last_docs, 1):
-                doc_name = doc.metadata.get("source", "Unknown File")
-                st.write(f"{i}. **Doc:** {doc_name[:50]}... | **Score:** {round(score, 4)}")
-        else:
-            st.warning("⚠️ No relevant document found.")
-
-# Now move to the bottom container for the input
-with input_container:
-    # Create a form for the chat input
-    with st.form(key="chat_form", clear_on_submit=True):
-        col1, col2 = st.columns([5, 1])
-        with col1:
-            user_input = st.text_input("💬 Ask Your question:", key="input", label_visibility="collapsed")
-        with col2:
-            submit_button = st.form_submit_button("Send")
-        
-        if submit_button and user_input.strip():
-            # Add user message to chat
-            st.session_state.messages.append({"role": "user", "content": user_input})
+# Display chat history and responses
+with chat_container:
+    # Display chat history
+    for message in st.session_state.messages:
+        with st.chat_message(message["role"]):
+            st.write(message["content"])
             
-            # Rerun to display user message
-            st.rerun()
+    # If there are messages, show the document details in an expander
+    if st.session_state.messages and len(st.session_state.messages) > 1:
+        with st.expander("View Retrieved Documents"):
+            st.subheader("📜 Top Retrieved Document Snippet:")
+            if "last_context" in st.session_state:
+                st.write(st.session_state.last_context[:500])
+            
+            st.subheader("🔢 Cosine Similarity Score (Top Match):")
+            if "last_cosine_score" in st.session_state:
+                st.write(round(st.session_state.last_cosine_score, 4))
+            
+            # Show retrieved documents
+            if "last_docs" in st.session_state and st.session_state.last_docs:
+                st.subheader("📚 Retrieved Documents and Scores:")
+                for i, (doc, score) in enumerate(st.session_state.last_docs, 1):
+                    doc_name = doc.metadata.get("source", "Unknown File")
+                    st.write(f"{i}. **Doc:** {doc_name[:50]}... | **Score:** {round(score, 4)}")
+            else:
+                st.warning("⚠️ No relevant document found.")
 
-# Process input (outside the form to avoid resubmission issues)
-if st.session_state.messages and st.session_state.messages[-1]["role"] == "user" and "processing" not in st.session_state:
-    st.session_state.processing = True
+# Input at the bottom
+with input_container:
+    user_input = st.text_input("💬 Ask Your question:", "")
+    col1, col2 = st.columns([4,1])
+    with col2:
+        submit_button = st.button("Submit")
+
+# Process the input
+if submit_button and user_input.strip():
+    # Add user message to chat
+    st.session_state.messages.append({"role": "user", "content": user_input})
     
-    # Display a spinner while processing
-    with st.spinner("Thinking..."):
-        # Get the last user message
-        last_user_input = st.session_state.messages[-1]["content"]
-        
-        # Display assistant message placeholder
+    # Display assistant message placeholder
+    with chat_container:
         with st.chat_message("assistant"):
             # Create an empty container for streaming text
             message_placeholder = st.empty()
@@ -116,10 +103,9 @@ if st.session_state.messages and st.session_state.messages[-1]["role"] == "user"
                 run_id = active_run.info.run_id
 
                 # Process query with streaming enabled
-                result, context, cosine_score, retrieved_docs_with_scores, prompt, top_doc, stream_generator = process_query(last_user_input, stream=True)
+                result, context, cosine_score, retrieved_docs_with_scores, prompt, top_doc, stream_generator = process_query(user_input, stream=True)
                 
-                # Save results for the document viewer
-                st.session_state.last_result = result
+                # Save context for the expander
                 st.session_state.last_context = context
                 st.session_state.last_cosine_score = cosine_score
                 st.session_state.last_docs = retrieved_docs_with_scores
@@ -143,14 +129,12 @@ if st.session_state.messages and st.session_state.messages[-1]["role"] == "user"
                 # Log asynchronously
                 thread = threading.Thread(
                     target=log_to_mlflow, 
-                    args=(run_id, last_user_input, prompt, result, [top_doc] if top_doc else [], cosine_score)
+                    args=(run_id, user_input, prompt, result, [top_doc] if top_doc else [], cosine_score)
                 )
                 thread.daemon = True
                 thread.start()
                 background_threads.append(thread)
     
-    # Reset processing flag
-    st.session_state.processing = False
-    
-    # Rerun to refresh UI and allow new input
+    # Clear the input field
+    user_input = ""
     st.rerun()
