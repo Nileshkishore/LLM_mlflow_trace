@@ -1,6 +1,8 @@
 from langchain_ollama import OllamaLLM
 import requests
 import json
+import mlflow
+from mlflow.entities import SpanType
 
 class OllamaLLMWithMetadata(OllamaLLM):
     def invoke(self, prompt):
@@ -23,6 +25,9 @@ class OllamaLLMWithMetadata(OllamaLLM):
             "prompt_tokens": response_json.get("prompt_eval_count"),
             "generated_tokens": response_json.get("eval_count")
         }
+    @mlflow.trace(span_type=SpanType.LLM)
+    def get_metadata(full_response, metadata):
+        return full_response, metadata
     
     def stream(self, prompt):
         """Stream tokens from Ollama API and return the full response."""
@@ -57,6 +62,5 @@ class OllamaLLMWithMetadata(OllamaLLM):
                             "prompt_tokens": chunk.get("prompt_eval_count"),
                             "generated_tokens": chunk.get("eval_count"),
                         }
-        
-        # Return both full response and metadata
-        return full_response, metadata
+       
+        get_metadata(full_response, metadata)
