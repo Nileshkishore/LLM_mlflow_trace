@@ -1,20 +1,22 @@
 from langchain_ollama import OllamaLLM
 import requests
 import json
+from mlflow.tracing import trace
 
 class OllamaLLMWithMetadata(OllamaLLM):
+    @trace
     def invoke(self, prompt):
-        """Override invoke method to include metadata"""
+        """Override invoke method to include metadata and use MLflow Tracing"""
         url = "http://localhost:11434/api/generate"
         data = {
             "model": self.model,
             "prompt": prompt,
-            "stream": False  # Ensure we get full metadata in one response
+            "stream": False
         }
-        
+
         response = requests.post(url, json=data)
-        response_json = response.json()  # Parse JSON
-        
+        response_json = response.json()
+
         return {
             "model": response_json.get("model"),
             "response": response_json.get("response"),
@@ -23,44 +25,40 @@ class OllamaLLMWithMetadata(OllamaLLM):
             "prompt_tokens": response_json.get("prompt_eval_count"),
             "generated_tokens": response_json.get("eval_count")
         }
-    
+
+    @trace
     def stream(self, prompt):
-        """Stream tokens from Ollama API with metadata at the end"""
+        """Stream tokens and return full response with MLflow Tracing"""
         url = "http://localhost:11434/api/generate"
         data = {
             "model": self.model,
             "prompt": prompt,
-            "stream": True  # Enable streaming
+            "stream": True
         }
-        
+
         with requests.post(url, json=data, stream=True) as response:
             response.raise_for_status()
-            
-            # Track metadata for final return
+
+            full_response = ""  # Collect full response
             metadata = {}
-            streamed_response = ""  # Store streamed output
-            
+
             for line in response.iter_lines():
                 if line:
                     chunk = json.loads(line.decode('utf-8'))
-                    
-                    # Collect the streamed text
+
                     if 'response' in chunk:
-                        streamed_response += chunk['response']
-                        yield chunk['response']  # Yield token-wise output
-                    
-                    # Save metadata when done
+                        token = chunk['response']
+                        full_response += token  # Append token to full response
+                        yield token  # Stream token-by-token
+
                     if chunk.get('done', False):
                         metadata = {
                             "model": chunk.get("model"),
                             "created_at": chunk.get("created_at"),
                             "total_duration": chunk.get("total_duration"),
                             "prompt_tokens": chunk.get("prompt_eval_count"),
-                            "generated_tokens": chunk.get("eval_count")
+                            "generated_tokens": chunk.get("eval_count"),
+                            "full_response": full_response  # Log full response
                         }
-            
-            # Return full response and metadata as a dictionary after streaming completes
-            return {
-                "response": streamed_response,
-                "metadata": metadata
-            }
+
+            yield metadata  # Return metadata at the end
