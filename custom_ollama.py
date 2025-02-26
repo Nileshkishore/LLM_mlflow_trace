@@ -64,4 +64,4 @@ class OllamaLLMWithMetadata(OllamaLLM):
                             "generated_tokens": chunk.get("eval_count"),
                         }
        
-        self.get_metadata(full_response, metadata)
+        self.get_metadata(self,full_response, metadata)
