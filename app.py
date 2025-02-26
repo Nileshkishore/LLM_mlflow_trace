@@ -16,7 +16,8 @@ background_threads = []
 def process_query(user_input):
     # Retrieve documents
     context, cosine_score, retrieved_docs_with_scores, top_doc = retrieve_documents(user_input)
-
+    if top_doc.metadata.get("source", "").split("/")[-1] == 'vulgar.txt':
+        result = "no comment"
     # Construct the full prompt
     if cosine_score <= config["score"]["thresold"]:
         prompt = f"Context: {context}\n\nQuestion: {user_input}"
