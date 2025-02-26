@@ -1,10 +1,8 @@
 from langchain_ollama import OllamaLLM
 import requests
 import json
-from mlflow.tracing import trace
 
 class OllamaLLMWithMetadata(OllamaLLM):
-    @trace
     def invoke(self, prompt):
         """Override invoke method to include metadata and use MLflow Tracing"""
         url = "http://localhost:11434/api/generate"
@@ -26,7 +24,6 @@ class OllamaLLMWithMetadata(OllamaLLM):
             "generated_tokens": response_json.get("eval_count")
         }
 
-    @trace
     def stream(self, prompt):
         """Stream tokens and return full response with MLflow Tracing"""
         url = "http://localhost:11434/api/generate"
