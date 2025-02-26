@@ -27,7 +27,7 @@ class OllamaLLMWithMetadata(OllamaLLM):
         }
     
     @mlflow.trace(span_type=SpanType.LLM)
-    def get_metadata(full_response, metadata):
+    def get_metadata(self,full_response, metadata):
         return full_response, metadata
     
     def stream(self, prompt):
@@ -64,4 +64,4 @@ class OllamaLLMWithMetadata(OllamaLLM):
                             "generated_tokens": chunk.get("eval_count"),
                         }
        
-        self.get_metadata(self,full_response, metadata)
+        self.get_metadata(full_response, metadata)
