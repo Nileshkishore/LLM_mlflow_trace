@@ -38,14 +38,16 @@ class OllamaLLMWithMetadata(OllamaLLM):
             
             # Track metadata for final return
             metadata = {}
+            streamed_response = ""  # Store streamed output
             
             for line in response.iter_lines():
                 if line:
                     chunk = json.loads(line.decode('utf-8'))
                     
-                    # Yield the token
+                    # Collect the streamed text
                     if 'response' in chunk:
-                        yield chunk['response']
+                        streamed_response += chunk['response']
+                        yield chunk['response']  # Yield token-wise output
                     
                     # Save metadata when done
                     if chunk.get('done', False):
@@ -56,3 +58,9 @@ class OllamaLLMWithMetadata(OllamaLLM):
                             "prompt_tokens": chunk.get("prompt_eval_count"),
                             "generated_tokens": chunk.get("eval_count")
                         }
+            
+            # Return full response and metadata as a dictionary after streaming completes
+            return {
+                "response": streamed_response,
+                "metadata": metadata
+            }
