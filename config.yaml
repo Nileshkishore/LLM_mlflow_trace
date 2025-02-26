@@ -10,3 +10,6 @@ llm:
 
 retrieval:
   top_k: 4
+
+score:
+  thresold: 0.7
