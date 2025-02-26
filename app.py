@@ -16,8 +16,7 @@ background_threads = []
 def process_query(user_input):
     # Retrieve documents
     context, cosine_score, retrieved_docs_with_scores, top_doc = retrieve_documents(user_input)
-    print(top_doc.metadata.source.split("/")[-1] )
-    if top_doc.metadata.source.split("/")[-1] == 'vulgar.txt':
+    if top_doc["metadata"]["source"]== "00-Sports-Articles/vulgar.txt":
         result = "no comment"
         prompt = f"Question: {user_input}"
     else:
