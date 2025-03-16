@@ -41,7 +41,7 @@ def process_query(user_input, stream=False):
             return result, context, cosine_score, retrieved_docs_with_scores, prompt, top_doc, None
 
 # Streamlit UI
-st.title("🔍 LLM RAG Chatbot with MLflow & ChromaDB")
+st.title("🔍 RAG Explorer")
 
 # Initialize session state for conversation history
 if "messages" not in st.session_state:
