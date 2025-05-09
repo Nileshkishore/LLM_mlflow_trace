@@ -67,7 +67,7 @@ with chat_container:
             if "last_context" in st.session_state:
                 st.write(st.session_state.last_context[:500])
             
-            st.subheader("🔢 Cosine Similarity Score (Top Match):")
+            st.subheader("🔢 Similarity Score (Top Match):")
             if "last_cosine_score" in st.session_state:
                 st.write(round(st.session_state.last_cosine_score, 4))
             
